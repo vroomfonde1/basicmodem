@@ -1,32 +1,35 @@
-import time
-from basicmodem.basicmodem import BasicModem
+"""Example: monitor for imcoming calls and display caller id information."""
 
+from basicmodem.basicmodem import BasicModem as bm
 
-def callback(self, newstate):
+state = bm.STATE_IDLE
+
+def callback(bm,newstate):
     """Callback from modem, process based on new state"""
-    if newstate == self.modem.STATE_RING:
-        if self.state == self.modem.STATE_IDLE:
-            att = {"cid_time": self.modem.get_cidtime(),
-                   "cid_number": '',
-                   "cid_name": ''}
+    print('callback: ', newstate)
+    if newstate == bm.STATE_RING:
+        if state == bm.STATE_IDLE:
+            att = {"cid_time": bm.get_cidtime,
+                   "cid_number": bm.get_cidnumber,
+                   "cid_name": bm.get_cidname}
             print('Ringing', att)
-    elif newstate == self.modem.STATE_CALLERID:
-        att = {"cid_time": self.modem.get_cidtime(),
-               "cid_number": self.modem.get_cidnumber(),
-               "cid_name": self.modem.get_cidname()}
+    elif newstate == bm.STATE_CALLERID:
+        att = {"cid_time": bm.get_cidtime,
+               "cid_number": bm.get_cidnumber,
+               "cid_name": bm.get_cidname}
         print('CallerID', att)
-    elif newstate == self.modem.STATE_IDLE:
+    elif newstate == bm.STATE_IDLE:
         print('idle')
     return
 
 def main():
-    modem = BasicModem(port='/dev/ttyACM1')
-    while modem.get_response() == '':
-        time.sleep(0.1)
+    modem = bm(port='/dev/ttyACM1', incomingcallback=callback)
 
-    resp=modem.sendcmd('ATI3')
-
-    print (resp)
+    """Print modem information."""
+    resp = modem.sendcmd('ATI3')
+    for line in resp:
+        if line:
+            print(line)
 
     try:
         input('Wait for call, press enter to exit')
