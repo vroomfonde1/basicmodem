@@ -2,7 +2,7 @@ from distutils.core import setup
 
 setup(
     name='basicmodem',
-    version='0.1',
+    version='0.3',
     packages=['basicmodem'],
     url='https://github.com/vroomfonde1/basicmodem',
     license='MIT',
