@@ -29,7 +29,7 @@ def main():
 
     if modem.state == modem.STATE_FAILED:
         print('Unable to initialize modem, exiting.')
-        return 
+        return
 
     """Print modem information."""
     resp = modem.sendcmd('ATI3')
