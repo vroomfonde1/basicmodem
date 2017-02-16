@@ -7,11 +7,12 @@ https://github.com/vroomfonde1/basicmodem
 import logging
 import serial
 
+
 _LOGGER = logging.getLogger(__name__)
 DEFAULT_PORT = '/dev/ttyACM0'
 DEFAULT_CMD_CALLERID = 'AT+VCID=1'
-RING_TIMEOUT = 10
-RING_WAIT = None
+READ_RING_TIMOUT = 10
+READ_IDLE_TIMEOUT = None
 
 
 class BasicModem(object):
@@ -19,13 +20,15 @@ class BasicModem(object):
     STATE_IDLE = 'idle'
     STATE_RING = 'ring'
     STATE_CALLERID = 'callerid'
+    STATE_FAILED = 'failed'
 
     def __init__(self, port=DEFAULT_PORT, incomingcallback=None):
         """Initialize internal variables"""
         import threading
         self.port = port
-        self.incomingcallnotificationfunc = incomingcallback or self._placeholdercallback
-        self._state = self.STATE_IDLE
+        self.incomingcallnotificationfunc = \
+            incomingcallback or self._placeholdercallback
+        self._state = self.STATE_FAILED
         self.cmd_callerid = DEFAULT_CMD_CALLERID
         self.cmd_response = ''
         self.cmd_responselines = []
@@ -57,8 +60,10 @@ class BasicModem(object):
                 self.ser = None
                 return
         except serial.SerialException:
-            _LOGGER.error('Unable to communicate with modem on port %s', self.port)
+            _LOGGER.error('Unable to communicate with modem on port %s',
+                          self.port)
             self.ser = None
+        self.set_state(self.STATE_IDLE)
 
     def read(self, timeout=1.0):
         """read from modem port, return null string on timeout."""
@@ -87,7 +92,7 @@ class BasicModem(object):
 
     def _placeholdercallback(self, *args):
         """ Does nothing """
-        _LOGGER.debug('called with args: {0}'.format(args))
+        _LOGGER.debug('placeholder callback')
         return
 
     def set_state(self, state):
@@ -134,16 +139,16 @@ class BasicModem(object):
         """Handle modem response state machine."""
         import datetime
 
-        ring_timer = RING_WAIT
+        read_timeout = READ_IDLE_TIMEOUT
         while self.ser:
             try:
-                resp = self.read(ring_timer)
+                resp = self.read(read_timeout)
             except (serial.SerialException, SystemExit):
                 _LOGGER.error('Unable to read from port %s', self.port)
                 break
 
             if self.state != self.STATE_IDLE and len(resp) == 0:
-                ring_timer = RING_WAIT
+                read_timeout = READ_IDLE_TIMEOUT
                 self.set_state(self.STATE_IDLE)
                 self.incomingcallnotificationfunc(self, self.state)
                 continue
@@ -153,8 +158,6 @@ class BasicModem(object):
             if self.cmd_response == '':
                 self.cmd_responselines.append(resp)
             _LOGGER.debug('mdm: %s', resp)
-            if resp == '':
-                continue
 
             if resp in ['OK', 'ERROR']:
                 self.cmd_response = resp
@@ -168,24 +171,18 @@ class BasicModem(object):
 
                 self.set_state(self.STATE_RING)
                 self.incomingcallnotificationfunc(self, self.state)
-                ring_timer = RING_TIMEOUT
+                read_timeout = READ_RING_TIMOUT
                 continue
 
-            if len(resp) <= 4:
+            if len(resp) <= 4 or resp.find('=') == -1:
                 continue
 
-            if resp.find('=') == -1:
-                continue
-
-            ring_timer = RING_TIMEOUT
+            read_timeout = READ_RING_TIMOUT
             cid_field, cid_data = resp.split('=')
             cid_field = cid_field.strip()
             cid_data = cid_data.strip()
             if cid_field in ['DATE']:
                 self.cid_time = datetime.datetime.now()
-                continue
-
-            if cid_field in ['TIME']:
                 continue
 
             if cid_field in ['NMBR']:
@@ -208,5 +205,6 @@ class BasicModem(object):
 
             continue
 
+        self.set_state(self.STATE_FAILED)
         _LOGGER.debug('Exiting modem state machine')
         return

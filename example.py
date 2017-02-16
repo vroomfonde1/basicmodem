@@ -4,7 +4,8 @@ from basicmodem.basicmodem import BasicModem as bm
 
 state = bm.STATE_IDLE
 
-def callback(bm,newstate):
+
+def callback(bm, newstate):
     """Callback from modem, process based on new state"""
     print('callback: ', newstate)
     if newstate == bm.STATE_RING:
@@ -22,8 +23,13 @@ def callback(bm,newstate):
         print('idle')
     return
 
+
 def main():
     modem = bm(port='/dev/ttyACM1', incomingcallback=callback)
+
+    if modem.state == modem.STATE_FAILED:
+        print('Unable to initialize modem, exiting.')
+        return 
 
     """Print modem information."""
     resp = modem.sendcmd('ATI3')
@@ -38,7 +44,6 @@ def main():
 
     modem.close()
 
+
 if __name__ == '__main__':
     main()
-
-
