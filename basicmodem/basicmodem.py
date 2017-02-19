@@ -16,14 +16,14 @@ READ_IDLE_TIMEOUT = None
 
 
 class BasicModem(object):
-    """Implementation of simple modem"""
+    """Implementation of simple modem."""
     STATE_IDLE = 'idle'
     STATE_RING = 'ring'
     STATE_CALLERID = 'callerid'
     STATE_FAILED = 'failed'
 
     def __init__(self, port=DEFAULT_PORT, incomingcallback=None):
-        """Initialize internal variables"""
+        """Initialize internal variables."""
         import threading
         self.port = port
         self.incomingcallnotificationfunc = \
@@ -91,7 +91,7 @@ class BasicModem(object):
         return self.get_lines()
 
     def _placeholdercallback(self, *args):
-        """ Does nothing """
+        """ Does nothing."""
         _LOGGER.debug('placeholder callback')
         return
 
@@ -143,8 +143,8 @@ class BasicModem(object):
         while self.ser:
             try:
                 resp = self.read(read_timeout)
-            except (serial.SerialException, SystemExit):
-                _LOGGER.error('Unable to read from port %s', self.port)
+            except (serial.SerialException, SystemExit, TypeError):
+                _LOGGER.debug('Unable to read from port %s', self.port)
                 break
 
             if self.state != self.STATE_IDLE and len(resp) == 0:

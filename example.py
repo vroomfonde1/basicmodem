@@ -1,4 +1,4 @@
-"""Example: monitor for imcoming calls and display caller id information."""
+"""Example: monitor for incoming calls and display caller id information."""
 
 from basicmodem.basicmodem import BasicModem as bm
 
@@ -25,7 +25,8 @@ def callback(bm, newstate):
 
 
 def main():
-    modem = bm(port='/dev/ttyACM1', incomingcallback=callback)
+
+    modem = bm(port='/dev/ttyACM0', incomingcallback=callback)
 
     if modem.state == modem.STATE_FAILED:
         print('Unable to initialize modem, exiting.')
@@ -39,7 +40,7 @@ def main():
 
     try:
         input('Wait for call, press enter to exit')
-    except (SyntaxError, EOFError):
+    except (SyntaxError, EOFError, KeyboardInterrupt):
         pass
 
     modem.close()

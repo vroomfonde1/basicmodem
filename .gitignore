@@ -89,3 +89,7 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+#
+pylintrc
+tox.ini
