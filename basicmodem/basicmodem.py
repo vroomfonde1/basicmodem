@@ -65,6 +65,11 @@ class BasicModem(object):
             self.ser = None
         self.set_state(self.STATE_IDLE)
 
+    def registercallback(self, incomingcallback=None):
+        """Register/unregister callback."""
+        self.incomingcallnotificationfunc = \
+            incomingcallback or self._placeholdercallback
+
     def read(self, timeout=1.0):
         """read from modem port, return null string on timeout."""
         self.ser.timeout = timeout
