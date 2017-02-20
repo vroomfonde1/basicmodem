@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='basicmodem',
-    version='0.5',
+    version='0.6',
     packages=['basicmodem'],
     url='https://github.com/vroomfonde1/basicmodem',
     install_requires=['pyserial'],

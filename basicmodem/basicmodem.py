@@ -90,9 +90,10 @@ class BasicModem(object):
                 timeout -= 0.1
         return self.get_lines()
 
-    def _placeholdercallback(self, *args):
+    # pylint: disable = no-self-use
+    def _placeholdercallback(self, newstate):
         """ Does nothing."""
-        _LOGGER.debug('placeholder callback')
+        _LOGGER.debug('placeholder callback: %s', newstate)
         return
 
     def set_state(self, state):
@@ -150,7 +151,7 @@ class BasicModem(object):
             if self.state != self.STATE_IDLE and len(resp) == 0:
                 read_timeout = READ_IDLE_TIMEOUT
                 self.set_state(self.STATE_IDLE)
-                self.incomingcallnotificationfunc(self, self.state)
+                self.incomingcallnotificationfunc(self.state)
                 continue
 
             resp = resp.decode()
@@ -170,7 +171,7 @@ class BasicModem(object):
                     self.cid_time = datetime.datetime.now()
 
                 self.set_state(self.STATE_RING)
-                self.incomingcallnotificationfunc(self, self.state)
+                self.incomingcallnotificationfunc(self.state)
                 read_timeout = READ_RING_TIMOUT
                 continue
 
@@ -192,7 +193,7 @@ class BasicModem(object):
             if cid_field in ['NAME']:
                 self.cid_name = cid_data
                 self.set_state(self.STATE_CALLERID)
-                self.incomingcallnotificationfunc(self, self.state)
+                self.incomingcallnotificationfunc(self.state)
                 _LOGGER.debug('CID: %s %s %s',
                               self.cid_time.strftime("%I:%M %p"),
                               self.cid_name,

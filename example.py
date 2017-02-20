@@ -5,27 +5,27 @@ from basicmodem.basicmodem import BasicModem as bm
 state = bm.STATE_IDLE
 
 
-def callback(bm, newstate):
+def callback(newstate):
     """Callback from modem, process based on new state"""
     print('callback: ', newstate)
-    if newstate == bm.STATE_RING:
-        if state == bm.STATE_IDLE:
-            att = {"cid_time": bm.get_cidtime,
-                   "cid_number": bm.get_cidnumber,
-                   "cid_name": bm.get_cidname}
+    if newstate == modem.STATE_RING:
+        if state == modem.STATE_IDLE:
+            att = {"cid_time": modem.get_cidtime,
+                   "cid_number": modem.get_cidnumber,
+                   "cid_name": modem.get_cidname}
             print('Ringing', att)
-    elif newstate == bm.STATE_CALLERID:
-        att = {"cid_time": bm.get_cidtime,
-               "cid_number": bm.get_cidnumber,
-               "cid_name": bm.get_cidname}
+    elif newstate == modem.STATE_CALLERID:
+        att = {"cid_time": modem.get_cidtime,
+               "cid_number": modem.get_cidnumber,
+               "cid_name": modem.get_cidname}
         print('CallerID', att)
-    elif newstate == bm.STATE_IDLE:
+    elif newstate == modem.STATE_IDLE:
         print('idle')
     return
 
 
 def main():
-
+    global modem
     modem = bm(port='/dev/ttyACM0', incomingcallback=callback)
 
     if modem.state == modem.STATE_FAILED:
